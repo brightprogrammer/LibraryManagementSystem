@@ -8,17 +8,12 @@
 #define LOGGER_H_
 
 #include <stdio.h>
+#include <stdlib.h>
 
-void Logger_PrintError(const char* s){
-    fprintf(stderr, "[ ERROR ] %s\n", s);
-}
+void LogError(const char* s);
 
-void Logger_PrintSuccess(const char* s){
-    fprintf(stderr, "[SUCCESS] %s\n", s);
-}
+void LogSuccess(const char* s);
 
-void Logger_PrintWarning(const char* s){
-    fprintf(stderr, "[WARNING] %s\n", s);
-}
+void LogWarning(const char* s);
 
 #endif // LOGGER_H_

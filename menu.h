@@ -24,6 +24,12 @@
  * a callback function with a callback data. When such an event
  * happens, the callback function (if provided) with callback
  * data (if provided) will be called.
+ *
+ * All callback functions must be of the type : void (*callback)(void*).
+ * Callback functions can take struct or array as parameter by casting it
+ * to void* and then inside the function make proper use of the passed
+ * data. This allows different callback functions to have their own type
+ * of arguments/parameters.
  * */
 
 /**
@@ -64,7 +70,7 @@ Menu* Menu_CreateMenu(const char* name, size_t size){
     // allocate space for menu
     Menu* m = (Menu*)malloc(sizeof(Menu));
     if(m == NULL){
-        Logger_PrintError("Failed to allocate memory for Menu");
+        LogError("Failed to allocate memory for Menu");
         return NULL;
     }
 
@@ -83,7 +89,7 @@ Menu* Menu_CreateMenu(const char* name, size_t size){
     m->size = size;
     m->menu = (MenuItem*)malloc(sizeof(MenuItem)*size);
     if(m->menu == NULL){
-        Logger_PrintError("Failed to allocate memory for MenuItem array");
+        LogError("Failed to allocate memory for MenuItem array");
         return NULL;
     }
 
@@ -94,6 +100,8 @@ Menu* Menu_CreateMenu(const char* name, size_t size){
  * Destroys the given menu. Frees all allocated memory.
  * This function must be called when the created Menu
  * is no longer required.
+ *
+ * @param m Menu to be destroyed.
  * */
 void Menu_DestroyMenu(Menu* m){
     // Check whether there is a double free or not
@@ -101,7 +109,6 @@ void Menu_DestroyMenu(Menu* m){
     // serious security bugs in software.
     if(m == NULL){
         Logger_PrintWarning("Double free for a Menu");
-        return;
     }
 
     // free menu item array
@@ -118,15 +125,47 @@ void Menu_DestroyMenu(Menu* m){
 /**
  * Prints the given menu on screen
  * like an enumerated list.
+ *
+ * @param m Menu to be printed on the screen.
  * */
 void Menu_PrintMenu(Menu* m){
+    // print menu item one by one
+    if(m == NULL){
+        LogError("NULL menu provided to PrintMenu function.");
+    }
+
+    // print menu name if provided
+    if(m->name != NULL)
+        printf("[ %s ]\n", m->name);
+
+    // print menu items
     for(size_t i = 0; i < m->size; i++){
-        printf("  [%2zu] | %c -> %s\n", i, m->menu[i].key, m->menu[i].short_description);
+        printf("[ %c ] -> %s\n", m->menu[i].key, m->menu[i].short_description);
     }
 }
 
-void Menu_AddItem(Menu* m){
+/**
+ * Add a new given menu item to given menu.
+ *
+ * @param m Pointer to menu to be updated.
+ * @param item Pointer to MenuItem struct containing
+ * information about menu item.
+ * */
+void Menu_AddItem(Menu* m, MenuItem* item){
+    // check if valid pointer is provided or not
+    if(m == NULL){
+        LogError("Cannot add menu new menu item to NULL menu pointer.");
+    }
 
+    // increase size of menu item array
+    m->size++;
+    m->menu = (MenuItem*)realloc(m->menu, m->size+1);
+    if(m->menu == NULL){
+        LogError("Failed to reallocate menu item array to add one more menu item.");
+    }
+
+    // store item data
+    m->menu[m->size-1] = *item;
 }
 
 #endif // MENU_H_
