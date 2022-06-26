@@ -10,13 +10,12 @@ Library* CreateLibrary(size_t numbooks){
 
     if(numbooks){
         lib->num_books = numbooks;
-        lib->books = (Book**)malloc(numbooks);
+        lib->books = (Book**)malloc(numbooks * sizeof(Book*));
 
         // create books
         for(size_t i = 0; i < numbooks; i++)
             lib->books[i] = CreateBook();
-    }else
-        lib->books = NULL;
+    }else lib->books = NULL;
 
     return lib;
 }
@@ -33,7 +32,7 @@ void DestroyLibrary(Library* lib){
     }
 
     // free books array
-    free(lib->books);
+    if(lib->books) free((void*)lib->books);
 
     lib->num_books = 0;
     lib->books = NULL;
@@ -149,4 +148,22 @@ Library* LoadLibraryData(const char* dbfilename){
     fclose(dbfile);
 
     return lib;
+}
+
+/**
+ * TODO: Create/Use a hash function to convert ISBN to an integer
+ * and sort elements in database according to those integer values.
+ * Use this to implement a faster search.
+ *
+ * At present this function performs a linear search which is good
+ * for small database but quite slow for large database. Not fit for
+ * production.
+ * */
+Book* GetBookByISBN(Library* library, const char* isbn){
+    // go through each book and search
+    for(size_t i = 0; i < library->num_books; i++){
+        if(strcmp(isbn, library->books[i]->isbn) == 0) return library->books[i];
+    }
+
+    return NULL;
 }

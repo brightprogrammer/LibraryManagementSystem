@@ -10,13 +10,13 @@
  * Stores data about a single book.
  * */
 typedef struct {
-    const char* name;
-    const char* author;
-    const char* publisher;
+    char* name;
+    char* author;
+    char* publisher;
     size_t num_tags;
-    const char** tags;
-    const char* description;
-    const char isbn[13];
+    char** tags;
+    char* description;
+    char* isbn;
     size_t row;
     size_t shelf;
     size_t total_copies;

@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.10.2 -->
+<interface>
+  <!-- interface-name lims.ui -->
+  <requires lib="gtk" version="4.6"/>
+  <object class="GtkApplicationWindow" id="mainwindow">
+    <property name="title">LiMS - Library Management System</property>
+    <child>
+      <object class="GtkBox" id="parent_box">
+        <property name="margin-bottom">2</property>
+        <property name="margin-end">2</property>
+        <property name="margin-start">2</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkGrid" id="header_grid">
+            <property name="column-spacing">2</property>
+            <property name="margin-bottom">2</property>
+            <property name="margin-end">2</property>
+            <property name="margin-start">2</property>
+            <child>
+              <object class="GtkButton" id="user_settings_btn">
+                <property name="label">User Settings</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="column-span">1</property>
+                  <property name="row">0</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox" id="name_title_box">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="college_name_label">
+                    <property name="label">Birla Institute Of Technology, Mesra</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="software_name_box">
+                    <property name="hexpand">True</property>
+                    <property name="label">Library Management System (v1.0)</property>
+                  </object>
+                </child>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="column-span">1</property>
+                  <property name="row">0</property>
+                  <property name="row-span">1</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkSearchEntry" id="book_search_entry">
+                <property name="margin-bottom">2</property>
+                <property name="margin-end">2</property>
+                <property name="margin-start">2</property>
+                <property name="placeholder-text">Search For Books</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkListBox" id="books_list_box">
+                <property name="margin-end">2</property>
+                <property name="margin-start">2</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

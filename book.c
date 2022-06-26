@@ -13,6 +13,7 @@ Book* CreateBook(){
     b->num_tags = 0;
     b->tags = NULL;
     b->description = NULL;
+    b->isbn = (char*)malloc(14);
     memset((void*)b->isbn, 0, 13);
     b->row = 0;
     b->shelf = 0;
@@ -38,7 +39,7 @@ void DestroyBook(Book* b){
     }
 
     if(b->description) free((void*)b->description);
-    memset((void*)b->isbn, 0, 13);
+    free((void*)b->isbn);
 
     b->row = 0;
     b->shelf = 0;
@@ -193,6 +194,7 @@ void LoadBookData(FILE* dbfile, Book* book){
     sz = fread((void*)book->isbn, 1, 13, dbfile);
     if(sz != 13)
         LogError("Failed to read data from dbfile\n");
+    book->isbn[13] = 0; /* null terminate string */
 
     // read book row
     sz = fread(&book->row, sizeof(size_t), 1, dbfile);

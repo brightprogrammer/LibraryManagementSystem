@@ -47,4 +47,16 @@ void SaveLibraryData(const char* dbfilename, Library* lib);
  * */
 Library* LoadLibraryData(const char* dbfilename);
 
+/**
+ * Helper function to get book data by isbn number.
+ * Since ISBN is the primary key in our data set, this will
+ * return a single book.
+ *
+ * @param library Library database to be used to search for book.
+ * @param isbn String containing isbn number of book in search.
+ * @return Pointer to book data if book is found in database.
+ * NULL if book is not found.
+ * */
+Book* GetBookByISBN(Library* library, const char* isbn);
+
 #endif // LIBRARY_H_

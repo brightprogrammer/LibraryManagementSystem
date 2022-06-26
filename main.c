@@ -4,174 +4,274 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <gtk/gtk.h>
+#include <glib/gstdio.h>
+
 #include "library.h"
 
-/**
- * Print intro text about this software.
- * */
-void PrintIntro(){
-    puts(";---------------------------------------------------------------------------------;");
-    puts(";                         LiMS Library Management System                          ;");
-    puts(";        Copyright (c) GroupOne Software Solutions 2022. All Rights Reserved      ;");
-    puts(";---------------------------------------------------------------------------------;");
-}
+// Library database is loaded globally
+static Library* ldb;
+
+/// Represents a global application state
+/// This will hold data like what database is laoded,
+/// Which user is logged in
+/// Some widgets that need to be accessed globally
+/// etc...
+/// THERE MUST BE ONLY ONE APP STATE THROUGHOUT THE APPLICATION!!
+typedef struct {
+    Library* library;
+    GtkListBox* book_list_box;
+} AppState;
+
+// Maintains global app state
+static AppState* appstate;
 
 /**
- * Resets the screen by clearing the terminal.
+ * Create the AppState object.
+ *
+ * @return AppState*
  * */
-void ResetScreen(){
-    #ifdef _WIN32
-    system("cls");
-    #else
-    system("clear");
-    #endif
+AppState* CreateAppState(){
+    AppState* appstate = (AppState*)malloc(sizeof(AppState));
+
+    appstate->library = NULL;
+    appstate->book_list_box = NULL;
 }
 
-void BookSearchPage(){
-    ResetScreen();
-    PrintIntro();
+/**
+ * Destroy given app state.
+ * AppState only holds pointer to required data
+ * and is not responsible for destruction or creation of
+ * any member. All deallocations must be done before
+ * calling this destructor function.
+ *
+ * @param appstate Pointer to the globally maintained AppState.
+ * */
+void DestroyAppState(AppState* appstate){
+    if(appstate == NULL) LogError("Attempt to double free for global app state object\n");
 
-    puts(";---------------------------------------------------------------------------------;");
-    puts(";                                   BOOK SEARCH                                   ;");
-    puts(";---------------------------------------------------------------------------------;");
-    printf("Please enter book name : ");
-
-    char bookname[40];
-    scanf("%s", bookname);
+    free((void*)appstate);
 }
 
-void LibrarianLoginPage(){
+/**
+ * Helper function to get data from book list row widget.
+ * Returns a pointer to 3 string values. First one contains
+ * name of the book, second contains name of author and third
+ * is for isbn number.
+ *
+ * @param row Pointer to GtkListBoxRow widget to get data from.
+ * @return Array of 3 string values. To be free'd after use.
+ * */
+const char** GetDataFromBookListRow(GtkListBoxRow* row){
+    // allocate space for array of size 3
+    char** row_data = (char**)malloc(3*sizeof(char*));
 
+    // get box in list row that contains label widgets
+    GtkWidget* box = gtk_widget_get_first_child(GTK_WIDGET(row));
+
+    // get book name
+    GtkWidget* child = GTK_WIDGET(gtk_widget_get_first_child(GTK_WIDGET(box)));
+    row_data[0] = gtk_label_get_label(child);
+
+    // get author name
+    child = GTK_WIDGET(gtk_widget_get_next_sibling(GTK_WIDGET(child)));
+    row_data[1] = gtk_label_get_label(child);
+
+    // get isbn number
+    child = GTK_WIDGET(gtk_widget_get_next_sibling(GTK_WIDGET(child)));
+    row_data[2] = gtk_label_get_label(child);
+
+    return row_data;
 }
 
-void StudentLoginPage(){
+/**
+ * Callback for handling when a row is actiaved.
+ * This is supposed to open a modal window displaying book information.
+ *
+ * @param self List box that triggered this event.
+ * @param row Row item selected.
+ * @param user_data User data passed to callback.
+ *
+ * */
+static void BookListRowActivatedClbk(GtkListBox* self, GtkListBoxRow* row, gpointer user_data){
+    // get data from row widget
+    char** row_data = GetDataFromBookListRow(row);
 
+    // third element in row data contains isbn number
+    // use isbn to find book
+    Book* book = GetBookByISBN(appstate->library, row_data[2]);
+
+    // load builder from ui file
+    GtkBuilder *builder = gtk_builder_new_from_file("book_data_display.ui");
+
+    // get window from builder
+    GtkWindow* window = GTK_WINDOW(gtk_builder_get_object(builder, "book_data_display_window"));
+    gtk_window_set_default_size(window, 400, 180);
+
+    // temp var to hold retrieved widgets from builder
+    GtkWidget* widget;
+
+    // change book name label
+    widget = GTK_WIDGET(gtk_builder_get_object(builder, "book_name_label"));
+    gtk_label_set_label(GTK_LABEL(widget), book->name);
+
+    widget = GTK_WIDGET(gtk_builder_get_object(builder, "author_name_label"));
+    gtk_label_set_label(GTK_LABEL(widget), book->author);
+
+    widget = GTK_WIDGET(gtk_builder_get_object(builder, "publisher_name_label"));
+    gtk_label_set_label(GTK_LABEL(widget), book->publisher);
+
+    widget = GTK_WIDGET(gtk_builder_get_object(builder, "isbn_label"));
+    gtk_label_set_label(GTK_LABEL(widget), book->isbn);
+
+    widget = GTK_WIDGET(gtk_builder_get_object(builder, "description_label"));
+    gtk_label_set_label(GTK_LABEL(widget), book->description);
+
+    // buffer to hold size_t to string conversions
+    char buf[128];
+
+    widget = GTK_WIDGET(gtk_builder_get_object(builder, "total_copies_label"));
+    snprintf(buf, sizeof(buf), "%zu", book->total_copies);
+    gtk_label_set_label(GTK_LABEL(widget), buf);
+
+    widget = GTK_WIDGET(gtk_builder_get_object(builder, "available_copies_label"));
+    snprintf(buf, sizeof(buf), "%zu", book->available_copies);
+    gtk_label_set_label(GTK_LABEL(widget), buf);
+
+    widget = GTK_WIDGET(gtk_builder_get_object(builder, "location_label"));
+    snprintf(buf, sizeof(buf), "Row %zu and Shelf %zu", book->row, book->shelf);
+    gtk_label_set_label(GTK_LABEL(widget), buf);
+
+    // show widgets inside window
+    gtk_widget_show(GTK_WIDGET(window));
+
+    // destroy builder
+    g_object_unref(builder);
 }
 
-void RegisterNewAccountPage(){
+/**
+ * Filter function for book search. Takes the filter string as user data argument
+ * and returns whether to show the given row or not in boolean.
+ * Type of this function is same as type of `GtkListBoxFilterFunc`
+ *
+ * Go (here)[https://docs.gtk.org/gtk4/method.ListBox.set_filter_func.html] for
+ * reference.
+ *
+ * @return gboolean TRUE if row is to be show, FALSE otherwise.
+ *  */
+gboolean BookSearchFilterFunc(GtkListBoxRow* row, gpointer filter_string){
+    // if search bar is empty then show all books by default
+    if(strlen(filter_string) == 0) return true;
 
+    // get data from row
+    char** row_data = GetDataFromBookListRow(row);
+
+    // check for a match in book name
+    if(strstr(row_data[0], filter_string) != NULL) return true;
+
+    // check for a match in author name
+    if(strstr(row_data[1], filter_string) != NULL) return true;
+
+    // check for a match in isbn number
+    if(strstr(row_data[2], filter_string) != NULL) return true;
+
+    // return false by default
+    return false;
 }
 
-// prints main page menu onto screen
-void PrintMainPage(){
-    puts(";---------------------------------------------------------------------------------;");
-    puts(";                                   MAIN PAGE                                     ;");
-    puts(";---------------------------------------------------------------------------------;");
-    puts("; [1] Book Search                                                                 ;");
-    puts("; [2] Librarian Login                                                             ;");
-    puts("; [3] Student Login                                                               ;");
-    puts("; [4] Register New Account                                                        ;");
-    puts("; [q] Quit LiMS                                                                   ;");
-    puts(";---------------------------------------------------------------------------------;");
-    puts("; Please enter any one of the options above.                                      ;");
-    puts(";---------------------------------------------------------------------------------;");
+/**
+ * Create a book list item displaying book name, author name and isbn number
+ * for the given book.
+ *
+ * @return GtkListBoxRow*
+ * */
+GtkWidget* CreateBookListItem(Book* book){
+    if(book == NULL) LogError("NULL passed instead of a Book pointer.\n");
+
+    // this will act as a list item
+    GtkListBoxRow* li_row = gtk_list_box_row_new();
+
+    // create box to hold other children
+    GtkBox* li_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+    gtk_box_set_homogeneous(li_box, true);
+    gtk_list_box_row_set_child(li_row, li_box);
+
+    // create labels
+    GtkWidget* bookname = GTK_WIDGET(gtk_label_new(book->name));
+    GtkWidget* authorname = GTK_WIDGET(gtk_label_new(book->author));
+    GtkWidget* isbn = GTK_WIDGET(gtk_label_new(book->isbn));
+
+    // add to box
+    gtk_box_append(li_box, bookname);
+    gtk_box_append(li_box, authorname);
+    gtk_box_append(li_box, isbn);
+
+    return li_row;
 }
 
-void MainPage(){
-    bool is_running = true;
+/**
+ * Search changed callback will be triggered whenever search string
+ * is changed for book search entry.
+ * */
+static void SearchChangedClbk(GtkSearchEntry* search_entry, gpointer user_data){
+    const gchar* filter_string = gtk_editable_get_text(GTK_EDITABLE(search_entry));
+    gtk_list_box_set_filter_func(GTK_LIST_BOX(appstate->book_list_box), BookSearchFilterFunc, (void*)filter_string, NULL);
+}
 
-    while(is_running){
-        // reset screen and print intro
-        ResetScreen();
-        PrintIntro();
+/**
+ * App activate callback function.
+ * */
+static void AppActivateClbk(GtkApplication *app, gpointer user_data){
+    GtkBuilder *builder = gtk_builder_new_from_file("lims.ui");
 
-        // print main page menu
-        PrintMainPage();
+    // get window and set window for this app
+    GtkWindow *window = GTK_WINDOW(gtk_builder_get_object(builder, "mainwindow"));
+    gtk_window_set_application(window, GTK_APPLICATION(app));
 
-        // handle input
-        char c = getchar();
+    // get book list and set it to appstate
+    GtkListBox* book_list = GTK_LIST_BOX(gtk_builder_get_object(builder, "books_list_box"));
+    appstate->book_list_box = book_list;
+    g_signal_connect(book_list, "row_activated", G_CALLBACK(BookListRowActivatedClbk), NULL);
 
-        if(c == '1'){
-            BookSearchPage();
-        }else if(c == '2'){
-            LibrarianLoginPage();
-        }else if(c == '3'){
-            StudentLoginPage();
-        }else if(c == '4'){
-            RegisterNewAccountPage();
-        }else if(c == 'q'){
-            is_running = false;
-        }
+    // load library data and set to global appstate
+    Library* ldb = LoadLibraryData("library.ldb");
+    appstate->library = ldb;
+
+    // add items to list
+    for(size_t i = 0; i < ldb->num_books; i++){
+        GtkWidget* li = CreateBookListItem(ldb->books[i]);
+        gtk_list_box_append(GTK_LIST_BOX(book_list), li);
     }
+
+    // get search entry and attach signals
+    GtkSearchEntry* book_search = GTK_SEARCH_ENTRY(gtk_builder_get_object(builder, "book_search_entry"));
+    g_signal_connect(book_search, "changed", G_CALLBACK(SearchChangedClbk), NULL);
+
+    // show widgets
+    gtk_widget_show(GTK_WIDGET(window));
+
+    // we do not need builder anymore
+    g_object_unref(builder);
 }
 
-const char* InputString(const char* msg){
-    size_t bufsz = 1024;
-    static char buf[1024];
+int main(int argc, char** argv){
+    GtkApplication *app;
+    int status;
 
-    memset((void*)buf, 0, bufsz);
-    printf("%s : ", msg);
-    scanf("%s", buf);
+    // create global appstate
+    appstate = CreateAppState();
 
-    char* str = (char*)malloc(strlen(buf)+1);
-    if(str == NULL)
-        LogError("Failed to allocate memory for input string\n");
+    // create application
+    app = gtk_application_new("com.lims.app", G_APPLICATION_FLAGS_NONE);
+    g_signal_connect(app, "activate", G_CALLBACK(AppActivateClbk), NULL);
+    status = g_application_run(G_APPLICATION(app), argc, argv);
+    g_object_unref(app);
 
-    // copy string from buffer to allocated memory
-    strcpy(str, buf);
+    // destroy library database
+    DestroyLibrary(appstate->library);
 
-    return str;
-}
+    // destroy global AppState
+    DestroyAppState(appstate);
 
-size_t InputSize(const char* msg){
-    size_t input;
-
-    printf("%s : ", msg);
-    scanf("%zu", &input);
-
-    return input;
-}
-
-void PrintBookData(Book* b){
-    printf("Book Name\t: %s\n", b->name);
-    printf("Author Name\t: %s\n", b->author);
-    printf("Publisher\t: %s\n", b->publisher);
-}
-
-int main(){
-    /* MainPage(); */
-
-    puts("Book Entry");
-
-    size_t numbooks = 4;
-    Library* lib;
-    /* CreateLibrary(numbooks); */
-
-    /* for(size_t i = 0; i < numbooks; i++){ */
-    /*     printf("\n\nBook[%zu]\n", i); */
-
-    /*     Book* b = lib->books[i]; */
-
-    /*     b->name = InputString("Book Name"); */
-    /*     b->author = InputString("Author Name"); */
-    /*     b->publisher = InputString("Publisher Name"); */
-
-    /*     b->num_tags = InputSize("Number Of Tags"); */
-    /*     b->tags = (const char**)malloc(b->num_tags*sizeof(char*)); */
-    /*     for(size_t i = 0; i < b->num_tags; i++){ */
-    /*         b->tags[i] = InputString("Enter Tag"); */
-    /*     } */
-
-    /*     b->description = InputString("Book Description"); */
-
-    /*     const char* isbn = InputString("ISBN 13"); */
-    /*     memcpy((void*)b->isbn, isbn, 13); */
-
-    /*     b->row = InputSize("Book Row"); */
-    /*     b->shelf = InputSize("Book Shelf"); */
-    /*     b->total_copies = InputSize("Total Copies"); */
-    /*     b->available_copies = InputSize("Available Copies"); */
-    /* } */
-
-    /* for(size_t i = 0; i < numbooks; i++) */
-    /*     PrintBookData(lib->books[i]); */
-
-    /* SaveLibraryData("library.ldb", lib); */
-    /* DestroyLibrary(lib); */
-
-    lib = LoadLibraryData("library.ldb");
-    for(size_t i = 0; i < numbooks; i++)
-        PrintBookData(lib->books[i]);
-
-    return 0;
+    return status;
 }
