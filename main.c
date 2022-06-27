@@ -219,6 +219,50 @@ static void SearchChangedClbk(GtkSearchEntry* search_entry, gpointer user_data){
 }
 
 /**
+ * To be called whenever a close window event needs to be handled.
+ *
+ * */
+static void CloseWindowClbk(GtkButton* btn, gpointer user_data){
+    GtkWindow* win = GTK_WINDOW(user_data);
+    gtk_window_destroy(win);
+}
+
+/**
+ * Add Book callback function. This will show a window to add new books.
+ *
+ * */
+static void AddBookClbk(GtkButton* btn, gpointer user_data){
+    // create builder
+    GtkBuilder* builder = gtk_builder_new_from_file("add_book.ui");
+
+    // get window
+    GtkWindow* window = GTK_WINDOW(gtk_builder_get_object(builder, "add_book_window"));
+
+    // attach event to close window
+    GtkButton* cancel_btn = GTK_BUTTON(gtk_builder_get_object(builder, "cancel_btn"));
+    g_signal_connect(cancel_btn, "clicked", G_CALLBACK(CloseWindowClbk), window);
+
+    /**
+     * TODO : Get values from all entry fields one by one, create a book struct,
+     * add this book to database. If such method is not implemented then implement
+     * a method to add books.
+     *
+     * NOTE : Try to read more about how C++ vectors allocate memory in order to
+     * reduce number of allocations / deallocations while adding a book. For now
+     * a simple method can be implemented.
+     * */
+
+    // get book name
+    GtkEntry* entry = GTK_Entry(gtk_builder_get_object(builder, "book_name_entry"));
+
+    // show widgets
+    gtk_widget_show(GTK_WIDGET(window));
+
+    // we do not need builder anymore
+    g_object_unref(builder);
+}
+
+/**
  * App activate callback function.
  * */
 static void AppActivateClbk(GtkApplication *app, gpointer user_data){
@@ -227,6 +271,7 @@ static void AppActivateClbk(GtkApplication *app, gpointer user_data){
     // get window and set window for this app
     GtkWindow *window = GTK_WINDOW(gtk_builder_get_object(builder, "mainwindow"));
     gtk_window_set_application(window, GTK_APPLICATION(app));
+    gtk_window_set_default_size(window, 960, 540); /* 16:9 ratio window */
 
     // get book list and set it to appstate
     GtkListBox* book_list = GTK_LIST_BOX(gtk_builder_get_object(builder, "books_list_box"));
@@ -246,6 +291,11 @@ static void AppActivateClbk(GtkApplication *app, gpointer user_data){
     // get search entry and attach signals
     GtkSearchEntry* book_search = GTK_SEARCH_ENTRY(gtk_builder_get_object(builder, "book_search_entry"));
     g_signal_connect(book_search, "changed", G_CALLBACK(SearchChangedClbk), NULL);
+
+    // get user settings button
+    // TODO : For now user settings button will be used to add books
+    GtkButton* user_settings = GTK_BUTTON(gtk_builder_get_object(builder, "user_settings_btn"));
+    g_signal_connect(user_settings, "clicked", G_CALLBACK(AddBookClbk), NULL);
 
     // show widgets
     gtk_widget_show(GTK_WIDGET(window));
