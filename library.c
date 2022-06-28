@@ -109,7 +109,12 @@ Library* LoadLibraryData(const char* dbfilename){
     // open file for reading
     FILE* dbfile = fopen(dbfilename, "r");
     if(dbfile == NULL){
-        LogError("Failed to open database file to read library data\n");
+//        LogError("Failed to open database file to read library data\n");
+        Library* lib = CreateLibrary(0);
+        SaveLibraryData("library.ldb", lib);
+
+        fprintf(stderr, "No database file found. Creating a new one!\n");
+        return lib;
     }
 
     // library data start and end signature

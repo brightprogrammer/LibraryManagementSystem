@@ -1,5 +1,6 @@
 #include "addbook.h"
 #include "appstate.h"
+#include "booklist.h"
 #include "dialog.h"
 
 // get global appstate

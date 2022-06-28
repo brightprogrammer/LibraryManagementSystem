@@ -105,8 +105,8 @@ void SaveBookData(FILE* dbfile, Book* book){
     // write number of tags
     sz = fwrite(&book->num_tags, sizeof(size_t), 1, dbfile);
     if(sz != 1)
-        LogError("Failed to write complete data to dbfile\n");
 
+        LogError("Failed to write complete data to dbfile\n");
     // write tags data
     for(size_t i = 0; i < book->num_tags; i++)
         WriteStringDataToFile(dbfile, book->tags[i]);
@@ -194,7 +194,6 @@ void LoadBookData(FILE* dbfile, Book* book){
     sz = fread((void*)book->isbn, 1, 13, dbfile);
     if(sz != 13)
         LogError("Failed to read data from dbfile\n");
-    book->isbn[13] = 0; /* null terminate string */
 
     // read book row
     sz = fread(&book->row, sizeof(size_t), 1, dbfile);

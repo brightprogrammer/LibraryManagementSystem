@@ -19,7 +19,8 @@ void ShowErrorMessageDialog(GtkWindow* parent_window, const char* msg){
 
 
 void ShowConfirmationDialog(GtkWindow* pwin, const char* msg,
-                            void (*response)(GtkDialog* self, gint response_id, gpointer user_data), gpointer user_data){
+                            void (*response)(GtkDialog* self, gint response_id, gpointer user_data),
+                            gpointer user_data){
     GtkDialogFlags flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
     GtkDialog* dialog = gtk_dialog_new_with_buttons (msg, pwin, flags,
                                                      "_OK", GTK_RESPONSE_ACCEPT,
