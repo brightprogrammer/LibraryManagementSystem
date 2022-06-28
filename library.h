@@ -57,6 +57,23 @@ Library* LoadLibraryData(const char* dbfilename);
  * @return Pointer to book data if book is found in database.
  * NULL if book is not found.
  * */
-Book* GetBookByISBN(Library* library, const char* isbn);
+Book* FindBookByISBN(Library* library, const char* isbn);
+
+/**
+ * Add a new book to given library.
+ *
+ * @param library Library database to add book to
+ * @param book New book data that needs to be added.
+ * @return 1 if operation was successful, 0 if unsuccessful.
+ * */
+int AddNewBookToLibrary(Library* library, Book* book);
+
+/**
+ * Delete given book from library.
+ *
+ * @param library Library database to delete book from.
+ * @param book Book to be deleted.
+ * */
+void DeleteBookFromLibrary(Library* library, Book* book);
 
 #endif // LIBRARY_H_

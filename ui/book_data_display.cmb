@@ -26,7 +26,9 @@
 	(1,45,"GtkLabel","available_copies_label",25,None,None,None,17),
 	(1,46,"GtkBox",None,24,None,None,None,1),
 	(1,47,"GtkButton",None,46,None,None,None,None),
-	(1,48,"GtkButton",None,46,None,None,None,1)
+	(1,48,"GtkButton","update_book_data_btn",46,None,None,None,1),
+	(1,49,"GtkButton","delete_book_btn",46,None,None,None,2),
+	(1,50,"GtkButton","close_display_btn",46,None,None,None,3)
   </object>
   <object_property>
 	(1,1,"GtkWidget","halign","start",None,None,None,None,None),
@@ -42,9 +44,10 @@
 	(1,24,"GtkWidget","margin-top","5",None,None,None,None,None),
 	(1,25,"GtkGrid","column-spacing","9",None,None,None,None,None),
 	(1,25,"GtkGrid","row-spacing","4",None,None,None,None,None),
+	(1,25,"GtkWidget","halign","center",None,None,None,None,None),
 	(1,25,"GtkWidget","valign","start",None,None,None,None,None),
 	(1,26,"GtkLabel","label","Book Name",None,None,None,None,None),
-	(1,28,"GtkLabel","label","Futuristik",None,None,None,None,None),
+	(1,28,"GtkLabel","label","On Periodic Repetition Of Events In A Simulated Environment",None,None,None,None,None),
 	(1,29,"GtkLabel","label","Author Name",None,None,None,None,None),
 	(1,30,"GtkLabel","label","Publisher Name",None,None,None,None,None),
 	(1,31,"GtkLabel","label","Description",None,None,None,None,None),
@@ -62,8 +65,14 @@
 	(1,45,"GtkLabel","label","nil",None,None,None,None,None),
 	(1,46,"GtkBox","spacing","9",None,None,None,None,None),
 	(1,46,"GtkWidget","halign","center",None,None,None,None,None),
+	(1,46,"GtkWidget","margin-bottom","4",None,None,None,None,None),
+	(1,46,"GtkWidget","margin-end","4",None,None,None,None,None),
+	(1,46,"GtkWidget","margin-start","4",None,None,None,None,None),
+	(1,46,"GtkWidget","margin-top","4",None,None,None,None,None),
 	(1,47,"GtkButton","label","Issue This Book",None,None,None,None,None),
-	(1,48,"GtkButton","label","Close Display",None,None,None,None,None)
+	(1,48,"GtkButton","label","Update Book Data",None,None,None,None,None),
+	(1,49,"GtkButton","label","Delete Book From DB",None,None,None,None,None),
+	(1,50,"GtkButton","label","Close Display",None,None,None,None,None)
   </object_property>
   <object_layout_property>
 	(1,25,26,"GtkGridLayoutChild","column","0",None,None,None,None),

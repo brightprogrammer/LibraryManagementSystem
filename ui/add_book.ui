@@ -11,7 +11,7 @@
     <property name="valign">start</property>
     <child>
       <object class="GtkBox">
-        <property name="halign">center</property>
+        <property name="halign">baseline</property>
         <property name="margin-bottom">4</property>
         <property name="margin-end">4</property>
         <property name="margin-start">4</property>
@@ -21,7 +21,6 @@
         <child>
           <object class="GtkGrid">
             <property name="column-spacing">4</property>
-            <property name="halign">start</property>
             <property name="margin-bottom">4</property>
             <property name="margin-end">4</property>
             <property name="margin-start">4</property>
@@ -159,9 +158,12 @@
             <child>
               <object class="GtkScrolledWindow">
                 <property name="child">
-                  <object class="GtkTextView"/>
+                  <object class="GtkTextView" id="description_entry"/>
                 </property>
-                <property name="min-content-height">4</property>
+                <property name="max-content-height">10</property>
+                <property name="max-content-width">80</property>
+                <property name="min-content-height">5</property>
+                <property name="min-content-width">40</property>
                 <layout>
                   <property name="column">1</property>
                   <property name="column-span">1</property>

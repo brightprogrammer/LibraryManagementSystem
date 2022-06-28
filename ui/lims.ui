@@ -18,8 +18,8 @@
             <property name="margin-end">2</property>
             <property name="margin-start">2</property>
             <child>
-              <object class="GtkButton" id="user_settings_btn">
-                <property name="label">User Settings</property>
+              <object class="GtkButton" id="add_new_book_btn">
+                <property name="label">Add New Book</property>
                 <layout>
                   <property name="column">1</property>
                   <property name="column-span">1</property>

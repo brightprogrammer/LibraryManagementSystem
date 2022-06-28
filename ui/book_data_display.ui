@@ -20,6 +20,7 @@
         <child>
           <object class="GtkGrid">
             <property name="column-spacing">9</property>
+            <property name="halign">center</property>
             <property name="row-spacing">4</property>
             <property name="valign">start</property>
             <child>
@@ -35,7 +36,7 @@
             </child>
             <child>
               <object class="GtkLabel" id="book_name_label">
-                <property name="label">Futuristik</property>
+                <property name="label">On Periodic Repetition Of Events In A Simulated Environment</property>
                 <layout>
                   <property name="column">1</property>
                   <property name="column-span">1</property>
@@ -212,6 +213,10 @@ In viverra massa quis orci mollis, sed rhoncus metus ultrices. Mauris consequat 
         <child>
           <object class="GtkBox">
             <property name="halign">center</property>
+            <property name="margin-bottom">4</property>
+            <property name="margin-end">4</property>
+            <property name="margin-start">4</property>
+            <property name="margin-top">4</property>
             <property name="spacing">9</property>
             <child>
               <object class="GtkButton">
@@ -219,7 +224,17 @@ In viverra massa quis orci mollis, sed rhoncus metus ultrices. Mauris consequat 
               </object>
             </child>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="update_book_data_btn">
+                <property name="label">Update Book Data</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="delete_book_btn">
+                <property name="label">Delete Book From DB</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="close_display_btn">
                 <property name="label">Close Display</property>
               </object>
             </child>

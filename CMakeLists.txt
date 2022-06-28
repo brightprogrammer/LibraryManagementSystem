@@ -17,5 +17,6 @@ add_definitions(${GTK4_CFLAGS_OTHER})
 
 # create main executable
 add_executable(main main.c book.c library.c
-                    fileops.c logger.c)
+                    fileops.c logger.c appstate.c
+                    addbook.c booklist.c dialog.c)
 target_link_libraries(main ${GTK4_LIBRARIES})

@@ -159,11 +159,52 @@ Library* LoadLibraryData(const char* dbfilename){
  * for small database but quite slow for large database. Not fit for
  * production.
  * */
-Book* GetBookByISBN(Library* library, const char* isbn){
+Book* FindBookByISBN(Library* library, const char* isbn){
     // go through each book and search
     for(size_t i = 0; i < library->num_books; i++){
         if(strcmp(isbn, library->books[i]->isbn) == 0) return library->books[i];
     }
 
     return NULL;
+}
+
+
+/**
+ * TODO : Try to read more about how C++ vectors allocate memory in order to
+ * reduce number of allocations / deallocations while adding a book. For now
+ * a simple method can be implemented.
+ * */
+int AddNewBookToLibrary(Library* library, Book* book){
+    // check if a book with same isbn exists or not
+    if(FindBookByISBN(library, book->isbn) != NULL) return 0; /* failure */
+
+    // reallocate books array to contain one more book
+    library->num_books++;
+    library->books = (Book**)realloc(library->books, library->num_books*sizeof(Book*));
+    if(library->books == NULL){
+        LogError("Failed to reallocate books array in library databse!\n");
+    }
+
+    // add book at the end
+    library->books[library->num_books - 1] = book;
+
+    return 1; /* success */
+}
+
+
+void DeleteBookFromLibrary(Library* library, Book* book){
+    for(size_t i = 0; i < library->num_books; i++){
+        if(library->books[i] == book){
+            // assign this found book by last book in array
+            library->books[i] = library->books[library->num_books-1];
+
+            // destroy book
+            DestroyBook(book);
+
+            break;
+        }
+    }
+
+    // no need to reallocate array as that happens automatically when new book is added
+    library->num_books--;
 }
