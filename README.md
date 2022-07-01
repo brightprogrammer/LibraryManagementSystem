@@ -3,10 +3,7 @@
 
 Library management project made for 1st year CS102 Lab course at BIT Mesra. Completely written in C.
 
-In this project, we write the complete database management backend by ourselves. We implement basic **CRUD** functionality for all our database components.
-We need to effectively maintain 2 databases :  
-- Books database
-- User (Student/Librarian) database
+![](images/main.png)
 
 Explanation of file structure : 
 - `main.c` implements basic application code.
