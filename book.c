@@ -191,6 +191,7 @@ void LoadBookData(FILE* dbfile, Book* book){
     book->description = ReadStringDataFromFile(dbfile);
 
     // read isbn
+    memset((char*)book->isbn, 0, 14);
     sz = fread((void*)book->isbn, 1, 13, dbfile);
     if(sz != 13)
         LogError("Failed to read data from dbfile\n");

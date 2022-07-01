@@ -126,6 +126,9 @@ void AddBookClbk(GtkButton* btn, gpointer parent_window){
         /* Show error message */
         ShowErrorMessageDialog(GTK_WINDOW(parent_window),  "A book with same ISBN number already exists!");
     }
+
+    // finally destroy window
+    gtk_window_destroy(pwin);
 }
 
 
