@@ -58,7 +58,7 @@ href="http://creativecommons.org/publicdomain/zero/1.0/">
 To the extent possible under law,
 <a rel="dct:publisher"
 href="https://brightprogrammer.netlify.app">
-<span property="dct:title">Siddharth Mishra</span></a> and their lab team-mates
+<span property="dct:title">Siddharth Mishra</span></a>
 has waived all copyright and related or neighboring rights to
 <span property="dct:title">Library Management System</span>.
     This work is published from:
